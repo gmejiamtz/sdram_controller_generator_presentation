@@ -58,7 +58,7 @@ date: March 15, 2024
 
 ### Communication to Memory Example
 
-![SDRAM Memory Cell](img/sdommunication Siaddressing
+![SDRAM Memory Cell](img/addressing.png)
 
 ## Why generate controllers?
 
@@ -203,6 +203,8 @@ No manual refresh…
 
 ## Challenges
 
+### Challenges with Chisel itself
+
 - Chisel 3.6 does not have good support for tri-state/inout pins
   - BlackBox incompatible with ChiselTest
     - Requires Verilog testbenches and simulators such as Verilator and iVerilog
@@ -211,6 +213,11 @@ No manual refresh…
   - Made masking difficult to implement
     - I’m not sure this would actually work in hardware…
   - Also doesn’t really support edge-triggered everything, but that’s not really a problem
+
+---
+
+### Challenges with memories
+
 - Size of real memory chip is somewhat large
   - Causes SBT to run out of memory when fully emulated
 - Need to know clock rate to properly emulate decay/activate latency
@@ -252,7 +259,7 @@ No manual refresh…
 
 ## Calls for Contributions and Questions
 
-![https://github.com/gmejiamtz/sdram_controller_generator](https://github.com/gmejiamtz/sdram_controller_generator)
+[https://github.com/gmejiamtz/sdram_controller_generator](https://github.com/gmejiamtz/sdram_controller_generator)
 
 - No tool installation required due to Github Codespaces!
   Inline Verilog attempted - see commit e58cd19

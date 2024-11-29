@@ -148,7 +148,10 @@ wait</li>
 </section>
 <section id="communication-to-memory-example" class="slide level3">
 <h3>Communication to Memory Example</h3>
-<p>![SDRAM Memory Cell](img/sdommunication Siaddressing</p>
+<figure>
+<img data-src="img/addressing.png" alt="SDRAM Memory Cell" />
+<figcaption aria-hidden="true">SDRAM Memory Cell</figcaption>
+</figure>
 </section></section>
 <section id="why-generate-controllers" class="title-slide slide level2">
 <h2>Why generate controllers?</h2>
@@ -359,8 +362,13 @@ much</li>
 <li>Refresh</li>
 </ul>
 </section></section>
+<section>
 <section id="challenges" class="title-slide slide level2">
 <h2>Challenges</h2>
+
+</section>
+<section id="challenges-with-chisel-itself" class="slide level3">
+<h3>Challenges with Chisel itself</h3>
 <ul>
 <li>Chisel 3.6 does not have good support for tri-state/inout pins
 <ul>
@@ -381,6 +389,11 @@ SDRAM controller does this
 <li>Also doesn’t really support edge-triggered everything, but that’s
 not really a problem</li>
 </ul></li>
+</ul>
+</section>
+<section id="challenges-with-memories" class="slide level3">
+<h3>Challenges with memories</h3>
+<ul>
 <li>Size of real memory chip is somewhat large
 <ul>
 <li>Causes SBT to run out of memory when fully emulated</li>
@@ -391,8 +404,7 @@ not really a problem</li>
 <li>Such as row activation latency, write-after-read bus coherency</li>
 </ul></li>
 </ul>
-</section>
-
+</section></section>
 <section id="future-work-and-current-status"
 class="title-slide slide level2">
 <h2>Future Work and Current Status</h2>
@@ -468,12 +480,8 @@ to deal with weird merge conflicts which is common in CSE 101 and
 <section id="calls-for-contributions-and-questions"
 class="title-slide slide level2">
 <h2>Calls for Contributions and Questions</h2>
-<figure>
-<img data-src="https://github.com/gmejiamtz/sdram_controller_generator"
-alt="https://github.com/gmejiamtz/sdram_controller_generator" />
-<figcaption
-aria-hidden="true">https://github.com/gmejiamtz/sdram_controller_generator</figcaption>
-</figure>
+<p><a
+href="https://github.com/gmejiamtz/sdram_controller_generator">https://github.com/gmejiamtz/sdram_controller_generator</a></p>
 <ul>
 <li>No tool installation required due to Github Codespaces! Inline
 Verilog attempted - see commit e58cd19
