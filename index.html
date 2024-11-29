@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="generator" content="pandoc">
-  <meta name="author" content="First Last">
-  <meta name="dcterms.date" content="1999-01-01">
-  <title>Title</title>
+  <meta name="author" content="Gary Mejia and Joaquin Ortiz">
+  <meta name="dcterms.date" content="2024-03-15">
+  <title>SDRAM Controller Generator</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -73,14 +73,414 @@
     <div class="slides">
 
 <section id="title-slide">
-  <h1 class="title">Title</h1>
-  <p class="subtitle">Sub-title</p>
-  <p class="author">First Last</p>
-  <p class="date">January 1, 1999</p>
+  <h1 class="title">SDRAM Controller Generator</h1>
+  <p class="subtitle">A Chisel hardware generator for SDRAM controllers
+from their datasheets</p>
+  <p class="author">Gary Mejia and Joaquin Ortiz</p>
+  <p class="date">March 15, 2024</p>
 </section>
 
-<section class="slide level3">
+<section id="layout-of-presentation" class="title-slide slide level2">
+<h2>Layout of Presentation</h2>
+<ul>
+<li>Introduction to Memories</li>
+<li>Why generate controllers?</li>
+<li>Memory Model Internals</li>
+<li>Finite State Machine Internals</li>
+<li>Challenges up to this point</li>
+<li>Future Work</li>
+</ul>
+</section>
 
+<section>
+<section id="introduction-to-memories" class="title-slide slide level2">
+<h2>Introduction to memories</h2>
+<ul>
+<li>Humans need to remember things: names, faces, dates, tasks</li>
+<li>Computers need to remember things too: previous computations
+states</li>
+<li>Different types of memory cells: SRAM(bottom), DRAM(top), flash(not
+pictured)</li>
+</ul>
+</section>
+<section id="dram-memory" class="slide level3">
+<h3>DRAM Memory</h3>
+<figure>
+<img data-src="img/dram.png" alt="DRAM Memory" />
+<figcaption aria-hidden="true">DRAM Memory</figcaption>
+</figure>
+</section>
+<section id="sram-memory-cell" class="slide level3">
+<h3>SRAM Memory Cell</h3>
+<figure>
+<img data-src="img/sram.png" alt="SRAM Memory Cell" />
+<figcaption aria-hidden="true">SRAM Memory Cell</figcaption>
+</figure>
+</section>
+<section id="what-is-sdram" class="slide level3">
+<h3>What is SDRAM?</h3>
+<ul>
+<li>Synchronous dynamic random access memory</li>
+<li>Controlled by an external clock
+<ul>
+<li>Only uses 1 edge</li>
+</ul></li>
+<li>Allows for data from SDRAM to join the pipeline of other
+instructions for efficient use and faster processing</li>
+</ul>
+</section>
+<section id="sdram-module" class="slide level3">
+<h3>SDRAM Module</h3>
+<figure>
+<img data-src="img/sdram.png" alt="SDRAM Memory Cell" />
+<figcaption aria-hidden="true">SDRAM Memory Cell</figcaption>
+</figure>
+</section>
+<section id="communication-to-memory" class="slide level3">
+<h3>Communication to Memory</h3>
+<ul>
+<li>Accessing memory is not as simple as giving an address</li>
+<li>User must respect several timing characteristics</li>
+<li>Data retrieval likely is not instantaneous and would need to
+wait</li>
+<li>Read data may be garbage until a certain number of cycles pass</li>
+</ul>
+</section>
+<section id="communication-to-memory-example" class="slide level3">
+<h3>Communication to Memory Example</h3>
+<p>![SDRAM Memory Cell](img/sdommunication Siaddressing</p>
+</section></section>
+<section id="why-generate-controllers" class="title-slide slide level2">
+<h2>Why generate controllers?</h2>
+<ul>
+<li>Generating memory itself would be fun but also already done -
+OpenRAM
+<ul>
+<li>It is also too low level and depending on what memory you are
+generating you can’t use a standard CMOS process - DRAM</li>
+</ul></li>
+<li>Controllers themselves have wide amount of parameters to turn
+<ul>
+<li>CAS latency - Cycles from start of a read command to read data being
+valid</li>
+<li>Running frequency</li>
+<li>Data and Address Widths</li>
+<li>Burst Length and Type</li>
+<li>Programming of the SDRAM chip</li>
+</ul></li>
+<li>Can also target different SDRAM modules as they may differ in
+initialization procedures</li>
+</ul>
+</section>
+
+<section id="memory-model-internals" class="title-slide slide level2">
+<h2>Memory Model Internals</h2>
+<ul>
+<li>As easy as MT48LC1M16A1 S</li>
+<li>Multiple banks, each bank has rows and columns
+<ul>
+<li>Need to activate row before access and deactivate when done</li>
+</ul></li>
+<li>Burst read/write - iterate through columns in row</li>
+<li>Need to send refresh every (parameter) cycles</li>
+<li>Runtime adjustable CAS; 1-3 cycles
+<ul>
+<li>Implemented with variable shift register</li>
+</ul></li>
+<li>Read-write masking</li>
+<li>Parameterized banks, rows, cols, refresh timer</li>
+<li>Tri-state data pins! (Or at least, it’s supposed to)</li>
+</ul>
+</section>
+
+<section id="pinout" class="title-slide slide level2">
+<h2>Pinout</h2>
+<figure>
+<img data-src="img/pinout.png"
+alt="Example SDRAM memory module pinout" />
+<figcaption aria-hidden="true">Example SDRAM memory module
+pinout</figcaption>
+</figure>
+</section>
+
+<section id="mt48lc1m16a1-functional-diagram"
+class="title-slide slide level2">
+<h2>MT48LC1M16A1 Functional Diagram</h2>
+<p><img data-src="img/functional_block.png" /></p>
+</section>
+
+<section id="hardware-parameters-and-io"
+class="title-slide slide level2">
+<h2>Hardware Parameters and IO</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Parameters</th>
+<th style="text-align: center;">SDRAM IO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img
+data-src="img/case_class.png" /></td>
+<td style="text-align: center;"><img
+data-src="img/to_sdram_io.png" /></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<section id="finite-state-machine" class="title-slide slide level2">
+<h2>Finite State Machine</h2>
+
+</section>
+<section id="finite-state-machine-internals" class="slide level3">
+<h3>Finite State Machine Internals</h3>
+<p><img data-src="img/fsm_diagram.jpg" /></p>
+</section>
+<section id="initialization-state" class="slide level3">
+<h3>Initialization State</h3>
+<p><img data-src="img/init.png" /></p>
+</section>
+<section id="idle-state" class="slide level3">
+<h3>Idle State</h3>
+<p><img data-src="img/idle.png" /></p>
+</section>
+<section id="active-state" class="slide level3">
+<h3>Active State</h3>
+<p><img data-src="img/active.png" /></p>
+</section>
+<section id="readingwriting-state" class="slide level3">
+<h3>Reading/Writing State</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Read</th>
+<th style="text-align: center;">Write</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img data-src="img/read.png" /></td>
+<td style="text-align: center;"><img data-src="img/write.png" /></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="refreshing-1" class="slide level3">
+<h3>Refreshing 1</h3>
+<p><img data-src="img/refresh.png" /></p>
+</section>
+<section id="refreshing-2" class="slide level3">
+<h3>Refreshing 2</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">From Idle</th>
+<th style="text-align: center;">From Active</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img
+data-src="img/from_idle.png" /></td>
+<td style="text-align: center;"><img
+data-src="img/from_actice.png" /></td>
+</tr>
+</tbody>
+</table>
+<p>Don’t interrupt read or write; try to refresh 2 cycles early. No
+manual refresh…</p>
+</section></section>
+<section>
+<section id="results" class="title-slide slide level2">
+<h2>Results</h2>
+
+</section>
+<section id="cas-latency-of-3" class="slide level3">
+<h3>CAS Latency of 3</h3>
+<p><img data-src="img/cas3.png" /></p>
+</section>
+<section id="cas-latency-of-2" class="slide level3">
+<h3>CAS Latency of 2</h3>
+<p><img data-src="img/cas2.png" /></p>
+</section>
+<section id="cas-latency-of-1" class="slide level3">
+<h3>CAS Latency of 1</h3>
+<p><img data-src="img/cas1.png" /></p>
+</section></section>
+<section>
+<section id="presets" class="title-slide slide level2">
+<h2>Presets</h2>
+<ul>
+<li>Add more versatility to controller
+<ul>
+<li>May break compatibility with sample memory model if modified too
+much</li>
+</ul></li>
+<li>Includes activate, refresh, and write timings
+<ul>
+<li>Parameterized into cycles</li>
+</ul></li>
+</ul>
+</section>
+<section id="preset-example" class="slide level3">
+<h3>Preset Example</h3>
+<figure>
+<img data-src="img/preset.png" alt="Example not final" />
+<figcaption aria-hidden="true">Example not final</figcaption>
+</figure>
+</section></section>
+<section>
+<section id="closing-the-loop" class="title-slide slide level2">
+<h2>Closing the Loop</h2>
+
+</section>
+<section id="controller" class="slide level3">
+<h3>Controller</h3>
+<ul>
+<li>Basic FSM transitions</li>
+<li>Row active delay</li>
+<li>Memory model initialization</li>
+<li>Read/Write states</li>
+<li>CAS Latency</li>
+<li>Refreshing</li>
+<li>Presets</li>
+</ul>
+</section>
+<section id="memory-model" class="slide level3">
+<h3>Memory Model</h3>
+<ul>
+<li>Basic activate-&gt;read/write-&gt;precharge loop (no delay)</li>
+<li>Burst read/write</li>
+<li>CAS Latency</li>
+<li>Write masking</li>
+<li>Refresh</li>
+</ul>
+</section></section>
+<section id="challenges" class="title-slide slide level2">
+<h2>Challenges</h2>
+<ul>
+<li>Chisel 3.6 does not have good support for tri-state/inout pins
+<ul>
+<li>BlackBox incompatible with ChiselTest
+<ul>
+<li>Requires Verilog testbenches and simulators such as Verilator and
+iVerilog</li>
+</ul></li>
+<li>Analog conditional connections not allowed yet every single Verilog
+SDRAM controller does this
+<ul>
+<li>Maybe it doesn’t like last connection semantics?</li>
+</ul></li>
+<li>Made masking difficult to implement
+<ul>
+<li>I’m not sure this would actually work in hardware…</li>
+</ul></li>
+<li>Also doesn’t really support edge-triggered everything, but that’s
+not really a problem</li>
+</ul></li>
+<li>Size of real memory chip is somewhat large
+<ul>
+<li>Causes SBT to run out of memory when fully emulated</li>
+</ul></li>
+<li>Need to know clock rate to properly emulate decay/activate latency
+<ul>
+<li>And some other things about the memory that we aren’t emulating</li>
+<li>Such as row activation latency, write-after-read bus coherency</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="future-work-and-current-status"
+class="title-slide slide level2">
+<h2>Future Work and Current Status</h2>
+<ul>
+<li>For the end of this class
+<ul>
+<li>More tests - 7 tests total (4 for Model, 3 for FSM)</li>
+<li>Include a refresh command - currently only done in initialization -
+Done</li>
+<li>Maybe basic Github Actions - Done</li>
+<li>Main program to generate Verilog - Done</li>
+</ul></li>
+<li>Far Future
+<ul>
+<li>Other memory models? - Supported?
+<ul>
+<li>This implementation is kind of specific</li>
+</ul></li>
+<li>Support burst reads and writes - Done</li>
+<li>Support more complicated workload loads</li>
+<li>Allow for multiple channels and internal scheduling</li>
+<li>Formal Verification?</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="what-we-learned-from-cse-228a"
+class="title-slide slide level2">
+<h2>What We Learned from CSE 228A</h2>
+<ul>
+<li>For Datasheet reading, each operation’s section will show the
+applicable timing constraint
+<ul>
+<li>Active cares about t_rcd, Write cares about t_wr, Read cares about
+CAS latency</li>
+</ul></li>
+<li>Targeting multiple SDRAM modules is a cool idea for a parameter
+<ul>
+<li>But a single SDRAM has so many options for parameters on its own
+that each one can likely be a CSE 228A final project on its own</li>
+</ul></li>
+<li>Experimental features are not fun to use
+<ul>
+<li>Very little documentation from others using these features leaves us
+to play around with code more that we would like to</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="advice-for-the-future-students"
+class="title-slide slide level2">
+<h2>Advice for the Future Students</h2>
+<ul>
+<li>Reusing code is always better than making your own
+<ul>
+<li>Our JSON parser is a library we found, we just create a Map to
+represent our datasheet from the JSON file</li>
+</ul></li>
+<li>Avoid Experimental Libraries unless necessary
+<ul>
+<li>If for whatever reason we need to update Chisel, our Analog
+functionality may need a rewrite</li>
+</ul></li>
+<li>Learn Git and version control
+<ul>
+<li>Our usage of branches isolated our development and we did not have
+to deal with weird merge conflicts which is common in CSE 101 and
+130</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="calls-for-contributions-and-questions"
+class="title-slide slide level2">
+<h2>Calls for Contributions and Questions</h2>
+<figure>
+<img data-src="https://github.com/gmejiamtz/sdram_controller_generator"
+alt="https://github.com/gmejiamtz/sdram_controller_generator" />
+<figcaption
+aria-hidden="true">https://github.com/gmejiamtz/sdram_controller_generator</figcaption>
+</figure>
+<ul>
+<li>No tool installation required due to Github Codespaces! Inline
+Verilog attempted - see commit e58cd19
+<ul>
+<li>But it broke the tests so it was commented out</li>
+</ul></li>
+</ul>
 </section>
     </div>
   </div>
