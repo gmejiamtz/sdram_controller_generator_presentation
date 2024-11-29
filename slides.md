@@ -143,7 +143,7 @@ date: March 15, 2024
 
 |       From Idle        |       From Active        |
 | :--------------------: | :----------------------: |
-| ![](img/from_idle.png) | ![](img/from_actice.png) |
+| ![](img/from_idle.png) | ![](img/from_active.png) |
 
 Don’t interrupt read or write; try to refresh 2 cycles early.
 No manual refresh…
